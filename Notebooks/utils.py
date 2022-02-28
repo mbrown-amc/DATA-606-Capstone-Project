@@ -63,7 +63,7 @@ def get_data():
     i = 1970
     for f in sfdataNFC:
         f.insert(1, "Year", i)
-         i += 1
+        i += 1
             
     fullsfdataAFC = pd.concat(sfdataAFC, ignore_index=True)
     fullsfdataNFC = pd.concat(sfdataNFC, ignore_index=True)
