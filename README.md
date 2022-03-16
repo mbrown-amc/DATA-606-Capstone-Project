@@ -27,9 +27,6 @@ NFL Season standings data: https://www.pro-football-reference.com/years/1970/
 
 ## Authors
 
-Contributors names and contact info
-
-
 Michael Brown (mbrown24@umbc.edu)
 Zachary Soden (zsoden1@umbc.edu)
 
