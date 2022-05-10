@@ -121,15 +121,15 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     for i in range(1971, 2020):
         for j in range(len(uniqueteams)):
             if testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j])].empty:
-        else:
-            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "QB")]
-            testfunct.append(newtest[0:QB])
-            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "RB")]
-            testfunct.append(newtest[0:RB])
-            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "TE")]
-            testfunct.append(newtest[0:TE])
-            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "WR")]
-            testfunct.append(newtest[0:WR])
+            else:
+                newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "QB")]
+                testfunct.append(newtest[0:QB])
+                newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "RB")]
+                testfunct.append(newtest[0:RB])
+                newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "TE")]
+                testfunct.append(newtest[0:TE])
+                newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "WR")]
+                testfunct.append(newtest[0:WR])
             
     #Recombining the data
     testmergenumpos = pd.concat(testfunct).reset_index(drop=True)
