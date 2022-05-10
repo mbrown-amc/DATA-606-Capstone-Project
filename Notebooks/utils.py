@@ -121,6 +121,7 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     for i in range(1971, 2020):
         for j in range(len(uniqueteams)):
             if testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j])].empty:
+                pass
             else:
                 newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "QB")]
                 testfunct.append(newtest[0:QB])
