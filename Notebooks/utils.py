@@ -1,9 +1,14 @@
 import os
 import pandas as pd
 
-def get_data():
+def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     """
     Loads and cleans the data, and combines it.
+    
+    QB: The number of QB per team to include in the data. Default = 1
+    RB: The number of RB per team to include in the data. Default = 2
+    TE: The number of TE per team to include in the data. Default = 2
+    WR: The number of WR per team to include in the data. Default = 3
     """
     import os
     import pandas as pd
@@ -77,8 +82,59 @@ def get_data():
     OneTeamOnly = fullfdata2.loc[(fullfdata2.Team != "2TM")]
     OneTeamOnly = OneTeamOnly.loc[(OneTeamOnly.Team !="3TM")]
     OneTeamOnly = OneTeamOnly.loc[(OneTeamOnly.Team != '4TM')]
-   
-    TestPoints = pd.DataFrame(OneTeamOnly.groupby(["Team", "Year", "Pos"])["FantasyPoints"].sum())
+    
+    #Offsetting the data so that the stats are from the year prior
+    testmerge1 = OneTeamOnly
+    testmerge1["Pred_Year"] = testmerge1["Year"] + 1
+    
+    testmerge2 = OneTeamOnly
+    testmerge2 = testmerge2[["Year", "Player", "Pos", "Team"]]
+    testmerge2 = testmerge2.rename(columns = {'Year': "Pred_Year"})
+    
+    testmerge3 = testmerge2.merge(testmerge1, how = 'outer', on = ["Pred_Year", "Player"])
+    testmerge3 = testmerge3.loc[(testmerge3.Pred_Year != 1970)]
+    testmerge3 = testmerge3.loc[(testmerge3.Pred_Year != 2020)]
+    
+    #For the moment, removing entries where the pred team is NaN because that means the player either did not play in the year we are predicting, or did nothing the whole year. This is sort of cheating, since when predicting for the future, we won't know whether a player will play that year or get injured or suspended or something. However, we can possibly argue that the intended use of our model would recalculate every time there was an injury or a suspension.
+    
+    testmerge4 = testmerge3
+    testmerge4 = testmerge4.dropna(subset = ["Pos_x"])
+    
+    #Also removing rookies or players who got injured the year before we are predicting. We might revisit this later, but for now, the idea is kind of trying to only use stats from the prior season to predict wins for that season, and since these players have no prior season stats, they cannot be used for that aim.
+
+    testmerge5 = testmerge4
+    testmerge5 = testmerge5.dropna(subset = ["Year"])
+    testmerge5 = testmerge5.rename(columns = {'Team_x': "Team", 'Team_y':"Last_Team", 'Pos_x':'Pos', 'Pos_y':'Last_Pos', 'Year':'Last_Year', 'Pred_Year': 'Year'})
+    
+    #Adding in the ability to set number of players per position included
+    #First step is to sort the original data
+    
+    testsort = testmerge5
+    testsort2 = testsort.sort_values(by = ["Year", "Team", "Pos", "FantasyPoints"], ascending = [True, True, True, False])
+    testsort2 = testsort2.reset_index()
+    
+    #Getting list of unique teams to use for the next step
+    uniqueteams = testsort2["Team"].unique()
+    
+    #Breaking the data into mini lists to then combine back into the main frame
+    testfunct = []
+    for i in range(1971, 2020):
+        for j in range(len(uniqueteams)):
+            if testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j])].empty:
+        else:
+            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "QB")]
+            testfunct.append(newtest[0:QB])
+            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "RB")]
+            testfunct.append(newtest[0:RB])
+            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "TE")]
+            testfunct.append(newtest[0:TE])
+            newtest = testsort2.loc[(testsort2.Year == i) & (testsort2.Team == uniqueteams[j]) & (testsort2.Pos == "WR")]
+            testfunct.append(newtest[0:WR])
+            
+    #Recombining the data
+    testmergenumpos = pd.concat(testfunct).reset_index(drop=True)
+    
+    TestPoints = pd.DataFrame(testmergenumpos.groupby(["Team", "Year", "Pos"])["FantasyPoints"].sum())
     
     TTestPoints = TestPoints.reset_index()
     
