@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 
-def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
+def get_data(QB = 1, RB = 2, TE = 2, WR = 3, rookie = "none"):
     """
     Loads and cleans the data, and combines it.
     
@@ -9,6 +9,7 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     RB: The number of RB per team to include in the data. Default = 2
     TE: The number of TE per team to include in the data. Default = 2
     WR: The number of WR per team to include in the data. Default = 3
+    rookie: How to handle players who played in year X but not year X-1. Options are "mean" for the average, "min" for the lowest, and "max" for the highest, number of points scored by the position in the year X-1, as well as "none" for removing those players from the data. Default = "none"
     """
     import os
     import pandas as pd
@@ -100,10 +101,35 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     testmerge4 = testmerge3
     testmerge4 = testmerge4.dropna(subset = ["Pos_x"])
     
-    #Also removing rookies or players who got injured the year before we are predicting. We might revisit this later, but for now, the idea is kind of trying to only use stats from the prior season to predict wins for that season, and since these players have no prior season stats, they cannot be used for that aim.
+    #Handling "rookie" players
 
-    testmerge5 = testmerge4
-    testmerge5 = testmerge5.dropna(subset = ["Year"])
+    rookiefill = testmerge4
+
+    rookiefill = rookiefill.fillna(0)
+    
+    #Filling the missing point values for players who played in year X but not the year X-1, presumably due to year X being their rookie year. Options are the average, the lowest, and the highest number of points scored for their position in the year X-1, as well as droping those enrtries entirely.
+    if rookie == "mean":
+        for i in range(1971, 2020):
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "QB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "QB")]["FantasyPoints"].mean()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "RB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "RB")]["FantasyPoints"].mean()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "TE"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "TE")]["FantasyPoints"].mean()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "WR"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "WR")]["FantasyPoints"].mean()
+    elif rookie == "min":
+        for i in range(1971, 2020):
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "QB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "QB")]["FantasyPoints"].min()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "RB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "RB")]["FantasyPoints"].min()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "TE"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "TE")]["FantasyPoints"].min()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "WR"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "WR")]["FantasyPoints"].min()
+    elif rookie == "max":
+        for i in range(1971, 2020):
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "QB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "QB")]["FantasyPoints"].max()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "RB"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "RB")]["FantasyPoints"].max()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "TE"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "TE")]["FantasyPoints"].max()
+            rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year == 0) & (rookiefill.Pos_x == "WR"), "FantasyPoints"] = rookiefill.loc[(rookiefill.Pred_Year == i) & (rookiefill.Year != 0) & (rookiefill.Pos_x == "WR")]["FantasyPoints"].max()
+    elif rookie == "none":
+        rookiefill = rookiefill.loc[(rookiefill.Year != 0)]
+    
+    testmerge5 = rookiefill
     testmerge5 = testmerge5.rename(columns = {'Team_x': "Team", 'Team_y':"Last_Team", 'Pos_x':'Pos', 'Pos_y':'Last_Pos', 'Year':'Last_Year', 'Pred_Year': 'Year'})
     
     #Adding in the ability to set number of players per position included
@@ -210,3 +236,43 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3):
     alldata["WR/G"] = alldata["WR"]/alldata["G"]
     
     return alldata
+
+def make_model(data):
+    """
+    Makes a linear regression model based on the given data.
+    
+    data: The data used to make the model.
+    """
+    #Setting the data to only be columns that we are interested in.
+    modeldata = data[["W-L%", "FantasyPoints/G", "QB/G", "RB/G", "TE/G", "WR/G"]]
+    
+    #Setting the X and y portions of the data.
+    X = modeldata[["FantasyPoints/G", "QB/G", "RB/G", "TE/G", "WR/G"]]
+    y = modeldata[["W-L%"]]
+    
+    #Splitting the data into training and testing splits.
+    from sklearn.model_selection import train_test_split
+    Xtrain, Xtest, ytrain, ytest = train_test_split(X, y, test_size = 0.2, random_state = 52594)
+    
+    #Scaling the data with StandardScaler.
+    from sklearn.preprocessing import StandardScaler
+    scaler = StandardScaler()
+    
+    scaler.fit(Xtrain)
+    scaledXtrain = scaler.transform(Xtrain)
+    scaledXtest = scaler.transform(Xtest)
+    
+    scaledXtrain = pd.DataFrame(scaledXtrain, columns = Xtrain.columns)
+    scaledXtest = pd.DataFrame(scaledXtest, columns = Xtest.columns)
+    
+    #Building the model.
+    from sklearn.linear_model import LinearRegression
+    model1 = LinearRegression().fit(scaledXtrain, ytrain)
+    model1.score(scaledXtest, ytest)
+    preds = model1.predict(scaledXtest)
+    datawithpreds = Xtest
+    datawithpreds["Pred"] = preds
+    datawithpreds["Actual"] = ytest
+    
+    #Returning the model as well as a dataframe with predicted and actual win totals from the test data.
+    return model1, datawithpreds
