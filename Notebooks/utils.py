@@ -235,6 +235,10 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3, rookie = "none"):
     alldata["TE/G"] = alldata["TE"]/alldata["G"]
     alldata["WR/G"] = alldata["WR"]/alldata["G"]
     
+    #Dropping 1970 because it cannot be used since we do not have data from 1969.
+
+    alldata2 = alldata2.loc[(alldata.Year != 1970)]
+    
     return alldata
 
 def make_model(data):
