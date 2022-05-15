@@ -237,7 +237,7 @@ def get_data(QB = 1, RB = 2, TE = 2, WR = 3, rookie = "none"):
     
     #Dropping 1970 because it cannot be used since we do not have data from 1969.
 
-    alldata2 = alldata2.loc[(alldata.Year != 1970)]
+    alldata = alldata.loc[(alldata.Year != 1970)]
     
     return alldata
 
