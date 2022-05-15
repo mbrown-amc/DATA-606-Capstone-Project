@@ -272,7 +272,7 @@ def make_model(data):
     #Building the model.
     from sklearn.linear_model import LinearRegression
     model1 = LinearRegression().fit(scaledXtrain, ytrain)
-    model1.score(scaledXtest, ytest)
+    print(model1.score(scaledXtest, ytest))
     preds = model1.predict(scaledXtest)
     datawithpreds = Xtest
     datawithpreds["Pred"] = preds
